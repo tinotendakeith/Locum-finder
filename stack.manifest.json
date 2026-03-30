@@ -1,0 +1,20 @@
+{
+  "name": "locumfinder",
+  "services": [
+    {
+      "name": "web",
+      "path": "apps/web",
+      "command": "pnpm dev"
+    },
+    {
+      "name": "api",
+      "path": "apps/api",
+      "command": "pnpm dev"
+    },
+    {
+      "name": "mobile",
+      "path": "apps/mobile",
+      "command": "pnpm dev"
+    }
+  ]
+}

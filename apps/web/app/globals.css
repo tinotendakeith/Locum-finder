@@ -1,0 +1,78 @@
+:root {
+  --bg: #f5f7fb;
+  --surface: #ffffff;
+  --surface-muted: #eef2f8;
+  --text: #112235;
+  --muted: #60758a;
+  --line: #d9e2ec;
+  --primary: #0b6a88;
+  --primary-strong: #064f67;
+  --accent: #1f9d65;
+  --danger: #b53a32;
+  --warning: #b97919;
+  --radius: 14px;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: linear-gradient(180deg, #f7fafc 0%, #edf2f7 100%); color: var(--text); font-family: "Segoe UI", "Helvetica Neue", sans-serif; }
+a { color: inherit; text-decoration: none; }
+
+.container { width: min(1120px, 92vw); margin: 0 auto; }
+
+.public-header { background: #0d2438; color: #e8f0f8; border-bottom: 1px solid #1a3952; }
+.top-row { display: flex; align-items: center; justify-content: space-between; min-height: 72px; gap: 18px; }
+.brand { font-weight: 700; font-size: 1.2rem; letter-spacing: 0.3px; }
+.top-links { display: flex; gap: 18px; font-size: 0.95rem; }
+
+.hero { padding: 64px 0 42px; background: radial-gradient(circle at 20% 20%, #d9eef4 0%, #f6fbff 48%, #edf4fb 100%); border-bottom: 1px solid var(--line); }
+.hero h1 { font-size: clamp(1.7rem, 4.8vw, 3rem); margin: 0 0 16px; max-width: 700px; }
+.hero p { margin: 0 0 24px; color: var(--muted); max-width: 780px; line-height: 1.55; }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.btn { display: inline-block; border: 0; border-radius: 10px; padding: 11px 16px; font-weight: 600; cursor: pointer; background: var(--primary); color: white; }
+.btn.secondary { background: #e8f0f5; color: #12324b; }
+
+.section { padding: 34px 0; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; box-shadow: 0 2px 8px rgba(20, 40, 60, 0.06); }
+.card h3 { margin-top: 0; }
+
+.page-head { padding: 26px 0 8px; }
+.page-head h1 { margin: 0 0 8px; }
+.page-head p { margin: 0; color: var(--muted); }
+
+.form-grid { display: grid; gap: 12px; max-width: 640px; }
+.input, .select, .textarea { width: 100%; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; background: #fff; font: inherit; }
+.textarea { min-height: 120px; }
+
+.table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); }
+.table th, .table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); font-size: 0.92rem; }
+.table th { background: var(--surface-muted); }
+
+.dashboard-shell { min-height: 100vh; display: grid; grid-template-columns: 260px 1fr; }
+.sidebar { background: #10273d; color: #dbebf8; padding: 20px 16px; border-right: 1px solid #1f3d56; }
+.sidebar-brand { font-weight: 700; margin-bottom: 18px; }
+.sidebar-link { display: block; padding: 9px 10px; border-radius: 8px; margin-bottom: 4px; color: #d4e7f6; }
+.sidebar-link:hover { background: #1c3b55; }
+.dashboard-main { padding: 20px; }
+
+.metric-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 14px; }
+.metric-card { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
+.metric-card p { margin: 0; color: var(--muted); font-size: 0.85rem; }
+.metric-card h3 { margin: 4px 0 0; font-size: 1.55rem; }
+
+.badge { display: inline-block; padding: 3px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.25px; }
+.badge.success { background: #ddf5e7; color: #1f7d50; }
+.badge.warning { background: #fff3dd; color: #9e6b1b; }
+.badge.danger { background: #ffe6e4; color: #a1332c; }
+.badge.neutral { background: #e8edf2; color: #4f657a; }
+
+.public-footer { margin-top: 28px; background: #10273d; color: #d3e3f0; padding: 30px 0; }
+.footer-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 24px; }
+
+@media (max-width: 900px) {
+  .grid-3, .metric-row, .footer-grid { grid-template-columns: 1fr; }
+  .dashboard-shell { grid-template-columns: 1fr; }
+  .sidebar { border-right: 0; border-bottom: 1px solid #1f3d56; }
+  .top-row { flex-wrap: wrap; padding: 8px 0; }
+  .top-links { flex-wrap: wrap; }
+}

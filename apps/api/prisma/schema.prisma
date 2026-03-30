@@ -1,0 +1,502 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  CLINIC
+  LOCUM
+}
+
+enum AccountStatus {
+  ACTIVE
+  PENDING_VERIFICATION
+  PENDING_APPROVAL
+  SUSPENDED
+  REJECTED
+  DEACTIVATED
+}
+
+enum LocumProfileStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum ClinicProfileStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum JobStatus {
+  DRAFT
+  PENDING_APPROVAL
+  ACTIVE
+  CLOSED
+  FILLED
+  CANCELLED
+  EXPIRED
+  REJECTED
+}
+
+enum ApplicationStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  SHORTLISTED
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+  CANCELLED
+}
+
+enum DocumentOwnerType {
+  LOCUM
+  CLINIC
+}
+
+enum DocumentReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum NotificationType {
+  PROFILE_REVIEW
+  CLINIC_REVIEW
+  JOB_REVIEW
+  APPLICATION_EVENT
+  ADMIN_MESSAGE
+  SYSTEM
+}
+
+enum WorkMode {
+  ONSITE
+  HYBRID
+  REMOTE
+}
+
+enum UrgencyLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+model User {
+  id                    String            @id @default(uuid())
+  email                 String            @unique
+  phone                 String?
+  passwordHash          String
+  role                  UserRole
+  accountStatus         AccountStatus     @default(PENDING_VERIFICATION)
+  emailVerifiedAt       DateTime?
+  lastLoginAt           DateTime?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  locumProfile          LocumProfile?
+  clinicProfile         ClinicProfile?
+  sessions              RefreshSession[]
+  notifications         Notification[]
+  auditLogs             AuditLog[]        @relation("auditActor")
+  passwordResetTokens   PasswordResetToken[]
+  emailVerification     EmailVerificationToken[]
+}
+
+model RefreshSession {
+  id             String   @id @default(uuid())
+  userId         String
+  tokenHash      String
+  expiresAt      DateTime
+  revokedAt      DateTime?
+  userAgent      String?
+  ipAddress      String?
+  createdAt      DateTime @default(now())
+
+  user           User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, expiresAt])
+}
+
+model PasswordResetToken {
+  id         String   @id @default(uuid())
+  userId     String
+  tokenHash  String
+  expiresAt  DateTime
+  usedAt     DateTime?
+  createdAt  DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, expiresAt])
+}
+
+model EmailVerificationToken {
+  id         String   @id @default(uuid())
+  userId     String
+  tokenHash  String
+  expiresAt  DateTime
+  usedAt     DateTime?
+  createdAt  DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, expiresAt])
+}
+
+model Profession {
+  id            String   @id @default(uuid())
+  name          String   @unique
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  locumProfiles LocumProfile[]
+  jobs          Job[]
+}
+
+model Specialty {
+  id           String   @id @default(uuid())
+  name         String   @unique
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  jobLinks     JobSpecialty[]
+}
+
+model FacilityType {
+  id             String   @id @default(uuid())
+  name           String   @unique
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  clinicProfiles ClinicProfile[]
+}
+
+model Region {
+  id         String   @id @default(uuid())
+  name       String   @unique
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  locumProfiles  LocumProfile[]
+  clinicProfiles ClinicProfile[]
+  jobs           Job[]
+}
+
+model DocumentType {
+  id         String   @id @default(uuid())
+  code       String   @unique
+  name       String
+  ownerType  DocumentOwnerType
+  required   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
+
+model LocumProfile {
+  id                  String             @id @default(uuid())
+  userId              String             @unique
+  firstName           String
+  lastName            String
+  professionalTitle   String?
+  professionId        String
+  yearsExperience     Int?
+  bio                 String?
+  licenseNumber       String?
+  licenseAuthority    String?
+  city                String?
+  regionId            String?
+  languages           String[]
+  expectedRateMin     Decimal?           @db.Decimal(10,2)
+  expectedRateMax     Decimal?           @db.Decimal(10,2)
+  currency            String?
+  workPreferences     String?
+  availabilitySummary String?
+  phoneNumber         String?
+  profilePhotoUrl     String?
+  status              LocumProfileStatus @default(DRAFT)
+  completenessScore   Int                @default(0)
+  submittedAt         DateTime?
+  reviewedAt          DateTime?
+  reviewedByUserId    String?
+  rejectionReason     String?
+  adminNotes          String?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  user                User                @relation(fields: [userId], references: [id])
+  profession          Profession          @relation(fields: [professionId], references: [id])
+  region              Region?             @relation(fields: [regionId], references: [id])
+  employmentHistory   LocumEmployment[]
+  educationHistory    LocumEducation[]
+  qualifications      LocumQualification[]
+  certifications      LocumCertification[]
+  applications        Application[]
+  documents           Document[]
+  savedJobs           SavedJob[]
+}
+
+model LocumEmployment {
+  id              String   @id @default(uuid())
+  locumProfileId  String
+  employerName    String
+  title           String
+  startDate       DateTime
+  endDate         DateTime?
+  description     String?
+  createdAt       DateTime @default(now())
+
+  locumProfile    LocumProfile @relation(fields: [locumProfileId], references: [id])
+}
+
+model LocumEducation {
+  id              String   @id @default(uuid())
+  locumProfileId  String
+  institution     String
+  qualification   String
+  startDate       DateTime?
+  endDate         DateTime?
+  createdAt       DateTime @default(now())
+
+  locumProfile    LocumProfile @relation(fields: [locumProfileId], references: [id])
+}
+
+model LocumQualification {
+  id              String   @id @default(uuid())
+  locumProfileId  String
+  category        String
+  title           String
+  institution     String?
+  yearAwarded     Int?
+  createdAt       DateTime @default(now())
+
+  locumProfile    LocumProfile @relation(fields: [locumProfileId], references: [id])
+}
+
+model LocumCertification {
+  id              String   @id @default(uuid())
+  locumProfileId  String
+  name            String
+  issuingBody     String?
+  issueDate       DateTime?
+  expiryDate      DateTime?
+  createdAt       DateTime @default(now())
+
+  locumProfile    LocumProfile @relation(fields: [locumProfileId], references: [id])
+}
+
+model ClinicProfile {
+  id                       String             @id @default(uuid())
+  userId                   String             @unique
+  facilityName             String
+  facilityTypeId           String?
+  description              String?
+  addressLine1             String?
+  addressLine2             String?
+  city                     String?
+  regionId                 String?
+  website                  String?
+  email                    String?
+  phoneNumber              String?
+  logoUrl                  String?
+  bannerUrl                String?
+  departments              String[]
+  contactPersonName        String?
+  contactPersonRole        String?
+  contactPersonPhone       String?
+  registrationNumber       String?
+  operatingLicenseNumber   String?
+  staffingPreferences      String?
+  status                   ClinicProfileStatus @default(DRAFT)
+  submittedAt              DateTime?
+  reviewedAt               DateTime?
+  reviewedByUserId         String?
+  rejectionReason          String?
+  adminNotes               String?
+  createdAt                DateTime           @default(now())
+  updatedAt                DateTime           @updatedAt
+
+  user                     User         @relation(fields: [userId], references: [id])
+  facilityType             FacilityType? @relation(fields: [facilityTypeId], references: [id])
+  region                   Region?      @relation(fields: [regionId], references: [id])
+  jobs                     Job[]
+  documents                Document[]
+}
+
+model Job {
+  id                       String      @id @default(uuid())
+  clinicProfileId          String
+  professionId             String
+  title                    String
+  roleLabel                String?
+  department               String?
+  locationText             String?
+  city                     String?
+  regionId                 String?
+  workMode                 WorkMode    @default(ONSITE)
+  startDate                DateTime
+  endDate                  DateTime?
+  shiftDates               DateTime[]
+  durationText             String?
+  hoursText                String?
+  compensationRate         Decimal?    @db.Decimal(10,2)
+  currency                 String      @default("USD")
+  description              String
+  responsibilities         String?
+  requirements             String?
+  requiredQualifications   String?
+  applicationDeadline      DateTime?
+  urgency                  UrgencyLevel @default(MEDIUM)
+  professionalsNeeded      Int         @default(1)
+  status                   JobStatus   @default(DRAFT)
+  visibilityPublic         Boolean     @default(true)
+  adminInternalNotes       String?
+  submittedAt              DateTime?
+  reviewedAt               DateTime?
+  reviewedByUserId         String?
+  rejectionReason          String?
+  filledAt                 DateTime?
+  closedAt                 DateTime?
+  createdAt                DateTime    @default(now())
+  updatedAt                DateTime    @updatedAt
+
+  clinicProfile            ClinicProfile @relation(fields: [clinicProfileId], references: [id])
+  profession               Profession    @relation(fields: [professionId], references: [id])
+  region                   Region?       @relation(fields: [regionId], references: [id])
+  specialties              JobSpecialty[]
+  applications             Application[]
+  savedBy                  SavedJob[]
+
+  @@index([status, startDate])
+  @@index([professionId, city])
+}
+
+model JobSpecialty {
+  jobId        String
+  specialtyId  String
+
+  job          Job       @relation(fields: [jobId], references: [id])
+  specialty    Specialty @relation(fields: [specialtyId], references: [id])
+
+  @@id([jobId, specialtyId])
+}
+
+model Application {
+  id                     String            @id @default(uuid())
+  jobId                  String
+  locumProfileId         String
+  coverNote              String?
+  cvDocumentId           String?
+  profileSnapshotJson    String?
+  status                 ApplicationStatus @default(SUBMITTED)
+  submittedAt            DateTime          @default(now())
+  reviewedAt             DateTime?
+  reviewedByClinicUserId String?
+  statusReason           String?
+  withdrawnAt            DateTime?
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+
+  job                    Job               @relation(fields: [jobId], references: [id])
+  locumProfile           LocumProfile      @relation(fields: [locumProfileId], references: [id])
+  cvDocument             Document?         @relation("applicationCv", fields: [cvDocumentId], references: [id])
+  history                ApplicationHistory[]
+
+  @@unique([jobId, locumProfileId])
+  @@index([status, submittedAt])
+}
+
+model ApplicationHistory {
+  id              String            @id @default(uuid())
+  applicationId   String
+  fromStatus      ApplicationStatus?
+  toStatus        ApplicationStatus
+  actorUserId     String
+  note            String?
+  createdAt       DateTime          @default(now())
+
+  application     Application       @relation(fields: [applicationId], references: [id])
+
+  @@index([applicationId, createdAt])
+}
+
+model SavedJob {
+  id               String   @id @default(uuid())
+  locumProfileId   String
+  jobId            String
+  createdAt        DateTime @default(now())
+
+  locumProfile     LocumProfile @relation(fields: [locumProfileId], references: [id])
+  job              Job          @relation(fields: [jobId], references: [id])
+
+  @@unique([locumProfileId, jobId])
+}
+
+model Document {
+  id                    String               @id @default(uuid())
+  ownerType             DocumentOwnerType
+  ownerLocumProfileId   String?
+  ownerClinicProfileId  String?
+  documentTypeId        String
+  fileName              String
+  filePath              String
+  mimeType              String
+  fileSizeBytes         Int
+  reviewStatus          DocumentReviewStatus @default(PENDING)
+  reviewedByUserId      String?
+  reviewedAt            DateTime?
+  rejectionReason       String?
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+
+  ownerLocumProfile     LocumProfile?  @relation(fields: [ownerLocumProfileId], references: [id])
+  ownerClinicProfile    ClinicProfile? @relation(fields: [ownerClinicProfileId], references: [id])
+  documentType          DocumentType   @relation(fields: [documentTypeId], references: [id])
+  applicationCvUsage    Application[]  @relation("applicationCv")
+
+  @@index([ownerType, ownerLocumProfileId, ownerClinicProfileId])
+}
+
+model Notification {
+  id            String            @id @default(uuid())
+  userId         String
+  type           NotificationType
+  title          String
+  body           String
+  actionUrl      String?
+  metadataJson   String?
+  readAt         DateTime?
+  createdAt      DateTime          @default(now())
+
+  user           User              @relation(fields: [userId], references: [id])
+
+  @@index([userId, readAt])
+}
+
+model AuditLog {
+  id             String   @id @default(uuid())
+  actorUserId    String?
+  action         String
+  entityType     String
+  entityId       String?
+  metadataJson   String?
+  createdAt      DateTime @default(now())
+
+  actor          User?    @relation("auditActor", fields: [actorUserId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
