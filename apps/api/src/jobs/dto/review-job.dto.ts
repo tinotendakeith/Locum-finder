@@ -1,14 +1,9 @@
-import { IsOptional, IsString } from "class-validator";
+import { IsString } from "class-validator";
 
 export class ReviewJobDto {
   @IsString()
-  decision!: "ACTIVE" | "REJECTED";
+  decision!: "PUBLISHED" | "REJECTED";
 
-  @IsOptional()
   @IsString()
   reason?: string;
-
-  @IsOptional()
-  @IsString()
-  adminNotes?: string;
 }

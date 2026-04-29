@@ -12,7 +12,7 @@ export class JobsService {
   async listPublic(query: JobsQueryDto) {
     const where = {
       visibilityPublic: true,
-      status: query.status ?? JobStatus.ACTIVE,
+      status: query.status ?? JobStatus.PUBLISHED,
       ...(query.professionId ? { professionId: query.professionId } : {}),
       ...(query.city ? { city: { contains: query.city, mode: "insensitive" as const } } : {}),
       ...(query.urgent ? { urgency: { in: [UrgencyLevel.HIGH, UrgencyLevel.CRITICAL] } } : {}),
@@ -148,8 +148,8 @@ export class JobsService {
 
   async updateClinicJob(userId: string, jobId: string, dto: UpdateJobDto) {
     const job = await this.mustOwnClinicJob(userId, jobId);
-    if ([JobStatus.CLOSED, JobStatus.CANCELLED, JobStatus.FILLED].includes(job.status)) {
-      throw new BadRequestException("Cannot edit closed/cancelled/filled jobs.");
+    if (job.status === JobStatus.CLOSED || job.status === JobStatus.FILLED || job.status === JobStatus.ARCHIVED) {
+      throw new BadRequestException("Cannot edit closed, filled, or archived jobs.");
     }
 
     const { specialtyIds, ...jobData } = dto;
@@ -181,7 +181,15 @@ export class JobsService {
     await this.mustOwnClinicJob(userId, jobId);
     return this.prisma.job.update({
       where: { id: jobId },
-      data: { status: JobStatus.PENDING_APPROVAL, submittedAt: new Date() },
+      data: { submittedAt: new Date(), reviewedAt: null, reviewedByUserId: null, rejectionReason: null },
+    });
+  }
+
+  async publishClinicJob(userId: string, jobId: string) {
+    await this.mustOwnClinicJob(userId, jobId);
+    return this.prisma.job.update({
+      where: { id: jobId },
+      data: { status: JobStatus.PUBLISHED, submittedAt: new Date(), reviewedAt: null, rejectionReason: null },
     });
   }
 
@@ -193,19 +201,29 @@ export class JobsService {
     });
   }
 
-  async reviewByAdmin(adminUserId: string, jobId: string, decision: "ACTIVE" | "REJECTED", reason?: string) {
+  async fillClinicJob(userId: string, jobId: string) {
+    await this.mustOwnClinicJob(userId, jobId);
+    return this.prisma.job.update({
+      where: { id: jobId },
+      data: { status: JobStatus.FILLED, filledAt: new Date() },
+    });
+  }
+
+  async reviewByAdmin(adminUserId: string, jobId: string, decision: "PUBLISHED" | "REJECTED", reason?: string) {
     const job = await this.prisma.job.findUnique({ where: { id: jobId } });
     if (!job) {
       throw new NotFoundException("Job not found.");
     }
 
+    const approved = decision === "PUBLISHED";
     const updated = await this.prisma.job.update({
       where: { id: jobId },
       data: {
-        status: decision === "ACTIVE" ? JobStatus.ACTIVE : JobStatus.REJECTED,
+        status: approved ? JobStatus.PUBLISHED : JobStatus.ARCHIVED,
         reviewedAt: new Date(),
         reviewedByUserId: adminUserId,
-        rejectionReason: decision === "REJECTED" ? reason : null,
+        rejectionReason: approved ? null : reason,
+        archivedAt: approved ? null : new Date(),
       },
     });
 

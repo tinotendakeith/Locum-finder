@@ -1,68 +1,43 @@
-# API Resource Map
+﻿# API Resource Map
 
-## Auth
-- POST /api/auth/register/locum
-- POST /api/auth/register/clinic
-- POST /api/auth/login
-- POST /api/auth/refresh
-- POST /api/auth/logout
-- POST /api/auth/forgot-password
-- POST /api/auth/reset-password
+## Auth API
+- POST /api/register
+- POST /api/login
+- POST /api/logout
+- GET /api/auth/google
+- GET /api/me
 
-## Users
-- GET /api/users/me
-- PATCH /api/users/me
-- PATCH /api/admin/users/:id/status
-
-## Locums
-- GET /api/locums/me
-- PATCH /api/locums/me
-- POST /api/locums/me/submit
-- GET /api/admin/locums
-- PATCH /api/admin/locums/:id/review
-
-## Clinics
-- GET /api/clinics/me
-- PATCH /api/clinics/me
-- POST /api/clinics/me/submit
-- GET /api/admin/clinics
-- PATCH /api/admin/clinics/:id/review
-
-## Jobs
+## Jobs API
 - GET /api/jobs
-- GET /api/jobs/:id
+- GET /api/jobs/{id}
 - POST /api/clinic/jobs
-- PATCH /api/clinic/jobs/:id
-- POST /api/clinic/jobs/:id/submit
-- POST /api/clinic/jobs/:id/close
-- PATCH /api/admin/jobs/:id/review
+- PUT /api/clinic/jobs/{id}
+- POST /api/clinic/jobs/{id}/publish
+- POST /api/clinic/jobs/{id}/fill
 
-## Applications
-- POST /api/locum/applications
-- GET /api/locum/applications
-- POST /api/locum/applications/:id/withdraw
-- GET /api/clinic/applications
-- PATCH /api/clinic/applications/:id/status
-- GET /api/admin/applications
+## Resume API
+- GET /api/resumes
+- POST /api/resumes
+- PUT /api/resumes/{id}
+- DELETE /api/resumes/{id}
 
-## Documents
-- POST /api/documents/upload-url
-- POST /api/documents
-- GET /api/documents/me
-- GET /api/admin/documents
-- PATCH /api/admin/documents/:id/review
+## Applications API
+- POST /api/jobs/{id}/apply
+- GET /api/applications
+- GET /api/clinic/jobs/{id}/applications
+- POST /api/applications/{id}/shortlist
+- POST /api/applications/{id}/approve
+- POST /api/applications/{id}/reject
 
-## Notifications
+## Notifications API
 - GET /api/notifications
-- POST /api/notifications/:id/read
+- POST /api/notifications/{id}/read
 
-## Admin Dashboard
-- GET /api/admin/dashboard/metrics
-- GET /api/admin/approvals
-- GET /api/admin/audit-logs
+## Messaging API
+- GET /api/conversations
+- GET /api/conversations/{id}
+- POST /api/conversations/{id}/messages
 
-## Taxonomy
-- GET /api/taxonomy/professions
-- GET /api/taxonomy/specialties
-- GET /api/taxonomy/facility-types
-- GET /api/taxonomy/regions
+## Current Scaffold Note
+The present NestJS scaffold exposes an earlier transitional API shape.
+It should be aligned to the resource map above as feature modules are implemented for real data flows.

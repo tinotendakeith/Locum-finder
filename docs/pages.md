@@ -1,46 +1,46 @@
-# Pages and Route Map
+﻿# Pages and Route Map
 
-## Public
+## Public Routes
 - /
-- /about
 - /jobs
-- /jobs/[id]
+- /jobs/[slug]
 - /login
 - /register
-- /register/locum
-- /register/clinic
+- /auth/google/callback
+- /about
 - /contact
-- /privacy
 - /terms
+- /privacy
 
-## Locum Dashboard
-- /dashboard/locum
-- /dashboard/locum/profile
-- /dashboard/locum/documents
-- /dashboard/locum/applications
-- /dashboard/locum/saved-jobs
-- /dashboard/locum/notifications
-- /dashboard/locum/settings
+## Locum Routes
+- /dashboard
+- /dashboard/resumes
+- /dashboard/resumes/new
+- /dashboard/resumes/[id]/edit
+- /dashboard/applications
+- /dashboard/messages
+- /dashboard/notifications
+- /dashboard/profile
 
-## Clinic Dashboard
-- /dashboard/clinic
-- /dashboard/clinic/profile
-- /dashboard/clinic/jobs
-- /dashboard/clinic/jobs/new
-- /dashboard/clinic/jobs/[id]
-- /dashboard/clinic/applicants
-- /dashboard/clinic/notifications
-- /dashboard/clinic/settings
+## Clinic Routes
+- /clinic/dashboard
+- /clinic/jobs
+- /clinic/jobs/new
+- /clinic/jobs/[id]/edit
+- /clinic/jobs/[id]/preview
+- /clinic/jobs/[id]/applicants
+- /clinic/messages
+- /clinic/notifications
+- /clinic/profile
 
-## Admin
+## Admin Routes
 - /admin
 - /admin/users
-- /admin/locums
-- /admin/clinics
 - /admin/jobs
 - /admin/applications
-- /admin/approvals
-- /admin/documents
-- /admin/specialties
-- /admin/settings
-- /admin/audit-logs
+- /admin/categories
+- /admin/reports
+
+## Current Scaffold Note
+The current preview still uses transitional route names such as `/dashboard/clinic/...` and `/dashboard/locum/...`.
+Those should be normalized toward the route map above as implementation continues.

@@ -1,4 +1,4 @@
-export type StatusTone = "success" | "warning" | "danger" | "neutral" | "info";
+﻿export type StatusTone = "success" | "warning" | "danger" | "neutral" | "info";
 
 export function statusTone(value: string): StatusTone {
   const v = value.toLowerCase();
@@ -11,7 +11,7 @@ export function statusTone(value: string): StatusTone {
 
 export const locumMenu = [
   { href: "/dashboard/locum", label: "Overview" },
-  { href: "/dashboard/locum/profile", label: "Profile" },
+  { href: "/dashboard/locum/profile", label: "Resumes" },
   { href: "/dashboard/locum/documents", label: "Documents" },
   { href: "/dashboard/locum/applications", label: "Applications" },
   { href: "/dashboard/locum/saved-jobs", label: "Saved Jobs" },
@@ -39,6 +39,8 @@ export const adminMenu = [
   { href: "/admin/approvals", label: "Approvals" },
   { href: "/admin/documents", label: "Documents" },
   { href: "/admin/specialties", label: "Specialties" },
+  { href: "/admin/privacy", label: "Privacy" },
   { href: "/admin/settings", label: "Settings" },
   { href: "/admin/audit-logs", label: "Audit Logs" },
 ];
+

@@ -53,9 +53,21 @@ export class JobsController {
   }
 
   @Roles(UserRole.CLINIC)
+  @Post("clinic/jobs/:id/publish")
+  publish(@CurrentUser() user: JwtUser, @Param("id") id: string) {
+    return this.jobsService.publishClinicJob(user.sub, id);
+  }
+
+  @Roles(UserRole.CLINIC)
   @Post("clinic/jobs/:id/close")
   close(@CurrentUser() user: JwtUser, @Param("id") id: string) {
     return this.jobsService.closeClinicJob(user.sub, id);
+  }
+
+  @Roles(UserRole.CLINIC)
+  @Post("clinic/jobs/:id/fill")
+  fill(@CurrentUser() user: JwtUser, @Param("id") id: string) {
+    return this.jobsService.fillClinicJob(user.sub, id);
   }
 
   @Roles(UserRole.ADMIN)

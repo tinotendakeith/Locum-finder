@@ -1,4 +1,4 @@
-import { IsEmail, IsOptional, IsString, MinLength } from "class-validator";
+import { IsBoolean, IsEmail, IsOptional, IsString, MinLength } from "class-validator";
 
 export class RegisterClinicDto {
   @IsEmail()
@@ -14,4 +14,14 @@ export class RegisterClinicDto {
   @IsOptional()
   @IsString()
   phone?: string;
+
+  @IsBoolean()
+  acceptedPrivacyNotice!: boolean;
+
+  @IsBoolean()
+  acceptedSensitiveDataUse!: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  marketingOptIn?: boolean;
 }

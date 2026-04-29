@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { JobStatus, LocumProfileStatus, ClinicProfileStatus } from "@prisma/client";
+import { ClinicProfileStatus, JobStatus, LocumProfileStatus } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { AuditService } from "../audit/audit.service";
 
@@ -11,13 +11,19 @@ export class AdminService {
   ) {}
 
   async metrics() {
+    const pendingJobWhere = {
+      status: JobStatus.DRAFT,
+      submittedAt: { not: null as Date | null },
+      reviewedAt: null,
+    };
+
     const [users, jobs, applications, pendingLocums, pendingClinics, pendingJobs] = await this.prisma.$transaction([
       this.prisma.user.count(),
       this.prisma.job.count(),
       this.prisma.application.count(),
       this.prisma.locumProfile.count({ where: { status: LocumProfileStatus.SUBMITTED } }),
       this.prisma.clinicProfile.count({ where: { status: ClinicProfileStatus.SUBMITTED } }),
-      this.prisma.job.count({ where: { status: JobStatus.PENDING_APPROVAL } }),
+      this.prisma.job.count({ where: pendingJobWhere }),
     ]);
 
     return {
@@ -31,10 +37,16 @@ export class AdminService {
   }
 
   async approvals() {
+    const pendingJobWhere = {
+      status: JobStatus.DRAFT,
+      submittedAt: { not: null as Date | null },
+      reviewedAt: null,
+    };
+
     const [locums, clinics, jobs] = await this.prisma.$transaction([
       this.prisma.locumProfile.findMany({ where: { status: LocumProfileStatus.SUBMITTED }, take: 50 }),
       this.prisma.clinicProfile.findMany({ where: { status: ClinicProfileStatus.SUBMITTED }, take: 50 }),
-      this.prisma.job.findMany({ where: { status: JobStatus.PENDING_APPROVAL }, take: 50 }),
+      this.prisma.job.findMany({ where: pendingJobWhere, take: 50 }),
     ]);
 
     return { locums, clinics, jobs };

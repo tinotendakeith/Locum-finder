@@ -13,6 +13,7 @@ import { NotificationsModule } from "./notifications/notifications.module";
 import { TaxonomyModule } from "./taxonomy/taxonomy.module";
 import { AuditModule } from "./audit/audit.module";
 import { AdminModule } from "./admin/admin.module";
+import { ResumesModule } from "./resumes/resumes.module";
 import { JwtAuthGuard } from "./common/guards/jwt-auth.guard";
 import { RolesGuard } from "./common/guards/roles.guard";
 import { AccountStatusGuard } from "./common/guards/account-status.guard";
@@ -26,6 +27,7 @@ import { HealthController } from "./health.controller";
     UsersModule,
     LocumsModule,
     ClinicsModule,
+    ResumesModule,
     JobsModule,
     ApplicationsModule,
     DocumentsModule,

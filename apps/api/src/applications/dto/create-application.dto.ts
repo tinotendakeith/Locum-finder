@@ -4,11 +4,10 @@ export class CreateApplicationDto {
   @IsString()
   jobId!: string;
 
-  @IsOptional()
   @IsString()
-  coverNote?: string;
+  resumeId!: string;
 
   @IsOptional()
   @IsString()
-  cvDocumentId?: string;
+  message?: string;
 }

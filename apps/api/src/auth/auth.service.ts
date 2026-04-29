@@ -4,7 +4,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from "@nestjs/common";
-import { JwtService } from "@nestjs/jwt";
+import { JwtService, type JwtSignOptions } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
 import { PrismaService } from "../prisma/prisma.service";
 import { AccountStatus, ClinicProfileStatus, LocumProfileStatus, UserRole } from "@prisma/client";
@@ -26,6 +26,10 @@ export class AuthService {
   ) {}
 
   async registerLocum(dto: RegisterLocumDto) {
+    if (!dto.acceptedPrivacyNotice || !dto.acceptedSensitiveDataUse) {
+      throw new BadRequestException("Privacy notice and sensitive data consent are required.");
+    }
+
     const existing = await this.prisma.user.findUnique({ where: { email: dto.email } });
     if (existing) {
       throw new BadRequestException("Email already in use.");
@@ -40,6 +44,11 @@ export class AuthService {
         passwordHash,
         role: UserRole.LOCUM,
         accountStatus: AccountStatus.PENDING_VERIFICATION,
+        acceptedPrivacyNotice: dto.acceptedPrivacyNotice,
+        acceptedSensitiveDataUse: dto.acceptedSensitiveDataUse,
+        marketingOptIn: dto.marketingOptIn ?? false,
+        privacyConsentVersion: "cdpa-si155-2026-04",
+        privacyConsentedAt: new Date(),
         locumProfile: {
           create: {
             firstName: dto.firstName,
@@ -56,6 +65,10 @@ export class AuthService {
   }
 
   async registerClinic(dto: RegisterClinicDto) {
+    if (!dto.acceptedPrivacyNotice || !dto.acceptedSensitiveDataUse) {
+      throw new BadRequestException("Privacy notice and data processing consent are required.");
+    }
+
     const existing = await this.prisma.user.findUnique({ where: { email: dto.email } });
     if (existing) {
       throw new BadRequestException("Email already in use.");
@@ -70,6 +83,11 @@ export class AuthService {
         passwordHash,
         role: UserRole.CLINIC,
         accountStatus: AccountStatus.PENDING_VERIFICATION,
+        acceptedPrivacyNotice: dto.acceptedPrivacyNotice,
+        acceptedSensitiveDataUse: dto.acceptedSensitiveDataUse,
+        marketingOptIn: dto.marketingOptIn ?? false,
+        privacyConsentVersion: "cdpa-si155-2026-04",
+        privacyConsentedAt: new Date(),
         clinicProfile: {
           create: {
             facilityName: dto.facilityName,
@@ -226,14 +244,15 @@ export class AuthService {
 
   private async createTokens(userId: string, email: string, role: UserRole, accountStatus: AccountStatus) {
     const payload = { sub: userId, email, role, accountStatus };
-    const accessExpiresIn = this.configService.get<string>("JWT_ACCESS_EXPIRES_IN", "15m");
+    const accessExpiresIn = this.configService.get<string>("JWT_ACCESS_EXPIRES_IN") ?? "15m";
     const refreshExpiryDays = this.configService.get<number>("JWT_REFRESH_DAYS", 30);
 
-    const accessToken = await this.jwtService.signAsync(payload, {
-      secret: this.configService.get<string>("JWT_ACCESS_SECRET", "dev-access-secret"),
-      expiresIn: accessExpiresIn,
-    });
+    const signOptions: JwtSignOptions = {
+      secret: this.configService.get<string>("JWT_ACCESS_SECRET") ?? "dev-access-secret",
+      expiresIn: accessExpiresIn as JwtSignOptions["expiresIn"],
+    };
 
+    const accessToken = await this.jwtService.signAsync(payload, signOptions);
     const refreshToken = randomBytes(48).toString("hex");
     const refreshExpiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * refreshExpiryDays);
 
